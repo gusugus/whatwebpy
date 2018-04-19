@@ -65,16 +65,27 @@ class Chat:
 	def get_no_leido(self):
 		return self.no_leido
 	def get_tiempo_llegada(self):
-		return self.tiempo_llegada
+		try:
+			self.tiempo_llegada.split(":")
+			return self.tiempo_llegada
+		except :
+			return "00:00"
+	'''
+	return int(tmp[0])*60+int(tmp[1])
+	*ValueError: invalid literal for int() with base 10: 'Martes'
+	'''
 	def get_tiempo_llegada_en_minutos(self):
-		tmp = self.tiempo_llegada.split(":")
-		return int(tmp[0])*60+int(tmp[1])
+		try:
+			tmp = self.tiempo_llegada.split(":")
+			return int(tmp[0])*60+int(tmp[1])
+		except :
+			return 0
 	'''*****SETTERS*****'''
 	'''La lista de los mensajes que tiene'''
 	def set_list(self, message):
 		self.message = message
 	def __str__(self):
-		return self.nombre.encode('utf-8')+"("+str(self.no_leido)+")"+" ["+self.tiempo_llegada.encode('utf-8')+"]"
+		return self.nombre.encode('utf-8')+"("+str(self.no_leido)+")"+" [-"+str(self.get_tiempo_llegada()).encode('utf-8')+"-]"
 
 '''-  -'''
 class Mensaje:
@@ -105,32 +116,25 @@ def enviar_mensaje(driver, mensaje):
         action.send_keys(Keys.RETURN)
 	action.perform()
 
-'''Traigo los X ultimos mensajes'''
+
+
+'''Traigo los X ultimos mensajes
+* ERROR CUANDO TENGO DEMASIADOS MENSAJES NO LEIDOS....
+'''
 def recolectar_mensajes(driver, chat):
-	'''
-	print("Nombre: "+chat.get_nombre()+" Mensajes totales: "+str(mensajes_totales)+" Mensajes no leidos: "+str(chat.get_no_leido()) +" ...")
-	array_recibidos = []
-	for i in range(mensajes_totales, mensajes_totales - chat.get_no_leido(), -1):
-		posicion_mensaje = XPATH_MENSAJES_RECIBIDOS_1+str(i)+"]"
-		mensaje = driver.find_element_by_xpath(posicion_mensaje).text
-		array_recibidos.append(mensaje)
-	return array_recibidos
-	'''
 	#print "NO LEIDOS: "+str(chat.get_no_leido())
 	array_recibidos = []
-	#time.sleep(1)
+	
 	lista_web_element_mensajes = driver.find_elements_by_xpath("//*[contains(concat(' ', @class, ' '),"+CLASE_MENSAJE+")]")
-	#print lista_web_element_mensajes
 	mensajes_totales = len(lista_web_element_mensajes)
-	#print "DESDE"+str(mensajes_totales)+" HASTA "+str(mensajes_totales-chat.get_no_leido())
-	#lista_ultimo_mensaje = driver.find_elements_by_xpath(("//div[@class="+CLASE_MENSAJE_NO_LEIDO+"]"))
-	#array_recibidos.append(lista_ultimo_mensaje[len(lista_ultimo_mensaje)-1].text)
-	
-	#if chat.get_no_leido()>1:
-	#agarro los mensajes que son nuevos
-	for i in range(mensajes_totales, mensajes_totales-chat.get_no_leido(), -1):
-		array_recibidos.append(lista_web_element_mensajes[i-1].text)
-	
+	try:
+		#print("TODOS LOS NO LEIDOS")
+		for i in range(mensajes_totales, mensajes_totales-chat.get_no_leido(), -1):
+			#print ("*"+lista_web_element_mensajes[i-1].text)
+			array_recibidos.append(lista_web_element_mensajes[i-1].text)
+	except :
+		print("Faltan mensajes... no puedo leer todos los mensajes de "+str(chat))
+		return array_recibidos
 	return array_recibidos
 
 
@@ -142,19 +146,20 @@ def get_chat_no_leido(array_chat):
 			break
 	return chat_retorno
 
+
 #https://stackoverflow.com/questions/27009247/python-find-min-max-and-average-of-a-list-array
 def get_chat_antiguo_no_leido(array_chat):
 	
 	chat_retorno = None
 	for chat in array_chat:
-		print str(chat)
+		#print str(chat)
 		if chat.get_no_leido()>0:
 			if not chat_retorno:
 				chat_retorno = chat
-				print str(chat_retorno)
+				#print str(chat_retorno)
 			elif chat.get_tiempo_llegada_en_minutos() < chat_retorno.get_tiempo_llegada_en_minutos():
 				chat_retorno = chat
-				print str(chat_retorno)
+				#print str(chat_retorno)
 	return chat_retorno
 
 
@@ -210,11 +215,11 @@ def get_seleccion(driver, opcion):
 	return driver.find_element_by_xpath(XPATH_NOMBRE_1+str(opcion)+"]")
 
 def scroll_down(driver, scroll):
-	driver.execute_script("document.getElementById('pane-side').scroll(0,"+str(scroll)+");")
+	driver.execute_script("document.getElementById('pane-side').scroll(0,"+str(scroll)+");")	
 
 def scroll_up(driver, scroll):
-	#CONTENEDOR_MENSAJES
-	#element = driver.find_element_by_xpath("//div[@class=+"CLASE_CONTENEDOR_MENSAJES+"]")
 	driver.execute_script("document.getElementById('pane-side').scroll(0,"+str(scroll)+");")
 	
-
+#document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);
+def scroll_down_all(driver):
+	driver.execute_script("document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);")
