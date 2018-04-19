@@ -1,32 +1,12 @@
 # -*- coding: utf-8 -*-
 '''
->>> x = "Hello World!"
->>> x[2:]
-'llo World!'
->>> x[:2]
-'He'
->>> x[:-2]
-'Hello Worl'
->>> x[-2:]
-'d!'
->>> x[2:-2]
-'llo Worl'
-'''
-'''
-geckodriver path
-***
-
+***geckodriver path***
 PATH=$PATH:/home/usuario/python/whatsapp
 cd python/whatsapp/
 python main.py
 
 ***
 instalar python-dev
-xxx
-Actualizar iceweasel
-llevar geckodriver a /usr/local/bin y darle permisos x
-	os.environ["PATH"] += "/usr/local/bin/firefox"
-xxx
 
 http://maslinux.es/como-instalar-firefox-quantum-en-gnulinux/
 $ sudo tar -xjf firefox-57.0.tar.bz2
@@ -34,23 +14,8 @@ $ sudo mv firefox /opt
 $ sudo ln -s /opt/firefox/firefox /usr/bin/firefox57
 $ firefox57
 
-
-crear nuevo profile
-firefox -p ->Nuevo Profile
-'''
-'''
 import time
-from webwhatsapi import WhatsAPIDriver
-
-
-#print("waiting for QR")
-driver = WhatsAPIDriver(client='Firefox', loadstyles=True, username='IFLEX')
-#driver.get_qr()
-
-list_chat = driver.view_unread()
-for chat in list_chat:
-	print chat
-	
+from webwhatsapi import WhatsAPIDriver	
 	
 '''
 from selenium import webdriver
@@ -64,6 +29,9 @@ import logging
 import time
 from datetime import datetime
 import sys
+
+MAXIMO_CHAT = 6
+SCROLL_SIZE = 40
 
 
 def todos_llenos(array):
@@ -86,11 +54,6 @@ def todos_vacios(array):
 	else:
 		return False
 
-
-
-'''
-whatsapp -p
-'''
 WEB = 'http://web.whatsapp.com'
 PATH_FIREFOX_PROFILE = '/home/usuario/.mozilla/firefox/u31mpec6.wasap'
 
@@ -99,13 +62,10 @@ logging.basicConfig(filename='myapp.log', level=logging.ERROR,
 logger=logging.getLogger(__name__)
 profile = webdriver.FirefoxProfile(PATH_FIREFOX_PROFILE)
 driver = webdriver.Firefox(profile)
-#driver.implicitly_wait(40) # seconds
 driver.get(WEB)
 delay = 100 # seconds
 try:
 	myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'app')))
-#lista_web_element = driver.find_elements_by_xpath("//div[@class='_2wP_Y']")
-#print('Espero... hasta q se \"LLENE\" todos')
 	scroll=0
 #termino de organizar y muestro a cual quiero hacer click
 	while True:	
@@ -114,71 +74,67 @@ try:
 		#Se actualiza cada X tiempo y si encuentra chat con mensajes no leidos los contestara
 		array_chat = llenar_array_chat(driver)
 
-		if array_chat > 6:
+		if array_chat > MAXIMO_CHAT:
 			try:				
 				while todos_llenos(array_chat):
-					print 'HaY no leidos'
+					#BAJAMOS UN POCO EL SCREEN
+					#print 'HaY no leidos'
+					scroll = scroll + SCROLL_SIZE
 					scroll_down(driver, scroll)
 					time.sleep(0.5)
-					scroll = scroll + 200
-					time.sleep(0.5)
 					array_chat = llenar_array_chat(driver)
-				
+					time.sleep(1)
 				if todos_vacios(array_chat):
-					print 'todos vacios'
+					#SI ESTAMOS HASTA ABAJO... SUBIMOS UN POCO
+					#print 'todos vacios'
+					scroll = scroll - SCROLL_SIZE
 					scroll_up(driver, scroll)
 					time.sleep(0.5)
-					scroll = scroll - 200
-					time.sleep(0.5)
 					array_chat = llenar_array_chat(driver)
+					time.sleep(0.5)
 			except:
 				print ("Javascrit exception")
-		time.sleep(1)
+		#time.sleep(1)
 		chat_no_leido = get_chat_antiguo_no_leido(array_chat)
-		#chat_no_leido = get_chat_no_leido(array_chat)
-		'''
-		os.system('clear')
-		array_chat = llenar_array_chat(driver)
-		print 'Tenemos los siguientes chats disponibles: '
-		i=1
-		for chat in array_chat:
-			print "* "+str(i)+": "+str(chat)
-			i=i+1
-		print("Ingrese el numero al cual quiere mandar mensaje: ")
-		
-		opcion = str(input_time())
-		print "Opcion deseada"+str(opcion)
-		if (opcion!="0") and (opcion!="") and (opcion!=None) and (opcion!="\n"):
-		'''
+		#time.sleep(3)
 		if(chat_no_leido!=None):
+			print ("*CHAT AL QUE DEBO HACER CLICK: *"+str(chat_no_leido))
 			opcion = chat_no_leido.get_numero_xpath()
 			seleccion = get_seleccion(driver, opcion)
+			print ("Hago click")
+			flag_click = False
 			
-			Hover = ActionChains(driver).move_to_element(seleccion)
-			Hover.perform()
-			Hover.click().perform()
-			print 'click'
-			time.sleep(1)
+			try:
+				Hover = ActionChains(driver).move_to_element(seleccion)
+				Hover.perform()
+				Hover.click().perform()
+			except :
+				print ("No pude hacer click")
+				flag_click = True
+				
+			while flag_click:
+				try:
+					scroll = scroll + SCROLL_SIZE
+					scroll_down(driver, scroll)
+					#time.sleep(0.5)
+					
+					Hover = ActionChains(driver).move_to_element(seleccion)
+					Hover.perform()
+					Hover.click().perform()
+					#print ("Pude hacer click")
+					flag_click = False
+					#time.sleep(1)
+				except :
+					#print ("No pude hacer click")
+					continue
 			
-			'''
-			driver.execute_script("document.getElementById('app').click();")
-			print 'click2'
-			time.sleep(1)
-			driver.execute_script("document.getElementById('app').focus();")
-			print 'Di Focus'
-			time.sleep(1)
-			'''
 			a = commands.getoutput("xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) _NET_WM_NAME")
 			start = a.find("\"")+1
 			programa_actual = a[start:-1]
 			print 'Nombre programa actual: '+programa_actual
-			#Recuperar el chat q se escogio
 			chat = array_chat[int(opcion)-1] # En el array es el anterior
-			#El numero de mensajes totales que se reciben...
-			time.sleep(1)
-			#mensajes_totales = total_mensajes_recuperados(driver)
-			#print str(mensajes_totales)
-			#El array de mensajjes recibidos...
+			#time.sleep(1)
+			print("Ya seleccion.e. el chat")
 			array_recibidos_t = recolectar_mensajes(driver, chat)
 			array_recibidos_t.reverse()
 			array_recibidos = [x.replace('\n', '') for x in array_recibidos_t]
@@ -193,16 +149,11 @@ try:
 			str1 = ""
 			for mens in lista_mensajes:
 				str1 = str1+" "+mens.get_contenido()
-			#str1 = str1.encode('utf-8')
 			print "Mensaje que llego: "+str1.encode('utf-8')
+			scroll_down_all(driver)
 			
-			#enviar_mensaje(driver, str1)
 			commands.getoutput('wmctrl -a Firefox')
-			time.sleep(1)
-			#Pierdo el foco
-			#driver.execute_script("document.getElementById('app').click();")			
-			#print 'quito focus'			
-			#driver.execute_script("document.getElementById('app').blur();")
+			time.sleep(0.8)
 			commands.getoutput("wmctrl -a '"+programa_actual+"'")
 			
 			time.sleep(TIEMPO_RECARGA)
