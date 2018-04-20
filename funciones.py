@@ -1,18 +1,22 @@
 '''DEPERCATED'''
 
 
+'''
+sudo apt-get install python-dev
+sudo easy-install pip
+pip install selenium
 
+CREAR NUEVO PROFILE MOZILLA (PRIMERO CERRARLO)
+firefox -p
+    /home/usuario/.mozilla/firefox/oanbip2k.whatsapp/
+'''
 
-
-
+from chatt import *
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 import os
 
-import commands
-
-import sys, select
 
 
 
@@ -107,14 +111,18 @@ def recargar_chats(driver):
 	return lista_web_element 
 	
 def enviar_mensaje(driver, mensaje):
-	input_box = driver.find_element_by_xpath(XPATH_CAJA_MENSAJES)
-	input_box.click()
-	if isinstance(mensaje, str):
-			mensaje = mensaje.decode("utf-8")
-	action = ActionChains(driver)
-        action.send_keys(mensaje)
-        action.send_keys(Keys.RETURN)
-	action.perform()
+    input_box = driver.find_element_by_xpath(XPATH_CAJA_MENSAJES)
+    input_box.click()
+    #print("Enviando mensaje "+mensaje)
+    #enviar A CHATT.py
+    mensaje = responder(mensaje)
+    if(isinstance(mensaje, str)):
+        mensaje = mensaje.decode("utf-8")
+    
+    action = ActionChains(driver)
+    action.send_keys(mensaje)
+    action.send_keys(Keys.RETURN)
+    action.perform()
 
 
 
@@ -196,14 +204,14 @@ def total_mensajes_recuperados(driver):
 	lista_web_element_mensajes = driver.find_elements_by_xpath("//div[@class="+CLASE_MENSAJE+"]")
 	return len(lista_web_element_mensajes)
 
-import os
+'''
 import ConfigParser
 def traer_configuraciones():
 	global TIME_INPUT,TIEMPO_RECARGA,LIMITE_MENSAJES,XPATH_CAJA_MENSAJES,CLASE_NOMBRE,CLASE_MENSAJE_NO_LEIDO,CLASE_DERECHA,CLASE_MENSAJE,XPATH_NOMBRE_1,XPATH_NOMBRE_2,XPATH_MENSAJES_RECIBIDOS_1,PATH_FIREFOX_PROFILE,WEB
 	configParser = ConfigParser.RawConfigParser()
 	configParser.read(os.getcwd()+'/conf.txt')
 	TIME_INPUT = configParser.get('conf','TIME_INPUT')
-	
+'''
 '''DEPERCATED'''
 def input_time():
 	i,o,e = select.select([sys.stdin],[],[],TIME_INPUT)
@@ -222,4 +230,5 @@ def scroll_up(driver, scroll):
 	
 #document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);
 def scroll_down_all(driver):
-	driver.execute_script("document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);")
+    driver.execute_script("document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);")
+
