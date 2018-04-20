@@ -15,11 +15,9 @@
 '''
 geckodriver path
 ***
-
 PATH=$PATH:/home/usuario/python/whatsapp
 cd python/whatsapp/
 python main.py
-
 ***
 instalar python-dev
 xxx
@@ -27,32 +25,31 @@ Actualizar iceweasel
 llevar geckodriver a /usr/local/bin y darle permisos x
 	os.environ["PATH"] += "/usr/local/bin/firefox"
 xxx
-
 http://maslinux.es/como-instalar-firefox-quantum-en-gnulinux/
 $ sudo tar -xjf firefox-57.0.tar.bz2
 $ sudo mv firefox /opt
 $ sudo ln -s /opt/firefox/firefox /usr/bin/firefox57
 $ firefox57
-
-
 crear nuevo profile
 firefox -p ->Nuevo Profile
 '''
 '''
 import time
 from webwhatsapi import WhatsAPIDriver
-
-
 #print("waiting for QR")
 driver = WhatsAPIDriver(client='Firefox', loadstyles=True, username='IFLEX')
 #driver.get_qr()
-
 list_chat = driver.view_unread()
 for chat in list_chat:
 	print chat
 	
 	
 '''
+import sys, select
+reload(sys)  
+sys.setdefaultencoding('latin-1')
+
+
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -63,8 +60,7 @@ from funciones import *
 import logging
 import time
 from datetime import datetime
-import sys
-
+import commands
 
 def todos_llenos(array):
 	contador = 0
@@ -92,7 +88,7 @@ def todos_vacios(array):
 whatsapp -p
 '''
 WEB = 'http://web.whatsapp.com'
-PATH_FIREFOX_PROFILE = '/home/usuario/.mozilla/firefox/u31mpec6.wasap'
+PATH_FIREFOX_PROFILE = '/home/usuario/.mozilla/firefox/oanbip2k.whatsapp'
 
 logging.basicConfig(filename='myapp.log', level=logging.ERROR, 
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
@@ -101,7 +97,7 @@ profile = webdriver.FirefoxProfile(PATH_FIREFOX_PROFILE)
 driver = webdriver.Firefox(profile)
 #driver.implicitly_wait(40) # seconds
 driver.get(WEB)
-delay = 100 # seconds
+delay = 20 # seconds
 try:
 	myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'app')))
 #lista_web_element = driver.find_elements_by_xpath("//div[@class='_2wP_Y']")
@@ -109,15 +105,15 @@ try:
 	scroll=0
 #termino de organizar y muestro a cual quiero hacer click
 	while True:	
-		time.sleep(1)
-		print "Buscando chats nuevos..."
+		#time.sleep(1)
+		print("Buscando chats nuevos...")
 		#Se actualiza cada X tiempo y si encuentra chat con mensajes no leidos los contestara
 		array_chat = llenar_array_chat(driver)
 
-		if array_chat > 6:
+		if len(array_chat) > 6:
 			try:				
 				while todos_llenos(array_chat):
-					print 'HaY no leidos'
+					print('HaY no leidos')
 					scroll_down(driver, scroll)
 					time.sleep(0.5)
 					scroll = scroll + 200
@@ -125,14 +121,14 @@ try:
 					array_chat = llenar_array_chat(driver)
 				
 				if todos_vacios(array_chat):
-					print 'todos vacios'
+					print('todos vacios')
 					scroll_up(driver, scroll)
 					time.sleep(0.5)
 					scroll = scroll - 200
 					time.sleep(0.5)
 					array_chat = llenar_array_chat(driver)
 			except:
-				print ("Javascrit exception")
+				print("Javascrit exception")
 		time.sleep(1)
 		chat_no_leido = get_chat_antiguo_no_leido(array_chat)
 		#chat_no_leido = get_chat_no_leido(array_chat)
@@ -157,7 +153,7 @@ try:
 			Hover = ActionChains(driver).move_to_element(seleccion)
 			Hover.perform()
 			Hover.click().perform()
-			print 'click'
+			print('click')
 			time.sleep(1)
 			
 			'''
@@ -171,7 +167,7 @@ try:
 			a = commands.getoutput("xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) _NET_WM_NAME")
 			start = a.find("\"")+1
 			programa_actual = a[start:-1]
-			print 'Nombre programa actual: '+programa_actual
+			print('Nombre programa actual: '+programa_actual)
 			#Recuperar el chat q se escogio
 			chat = array_chat[int(opcion)-1] # En el array es el anterior
 			#El numero de mensajes totales que se reciben...
@@ -194,20 +190,22 @@ try:
 			for mens in lista_mensajes:
 				str1 = str1+" "+mens.get_contenido()
 			#str1 = str1.encode('utf-8')
-			print "Mensaje que llego: "+str1.encode('utf-8')
+			print("Mensaje que llego: "+str1.encode('utf-8'))
 			
-			#enviar_mensaje(driver, str1)
+			
+			
 			commands.getoutput('wmctrl -a Firefox')
 			time.sleep(1)
+			enviar_mensaje(driver, str1)
 			#Pierdo el foco
 			#driver.execute_script("document.getElementById('app').click();")			
 			#print 'quito focus'			
 			#driver.execute_script("document.getElementById('app').blur();")
 			commands.getoutput("wmctrl -a '"+programa_actual+"'")
 			
-			time.sleep(TIEMPO_RECARGA)
+        time.sleep(TIEMPO_RECARGA)
 except TimeoutException:
-	print "Load took too much time!"
+	print("Load took too much time!")
 
 except:
 	logging.exception(str(datetime.now()))
