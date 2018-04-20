@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-#Exrtaido de....
+#encoding: utf-8
 #https://github.com/sukiweb/CreandoUnChatbotEnPython/blob/master/Creando_un_bot_experto_en_Cruceros.ipynb
 
 from chatterbot import ChatBot
@@ -11,7 +10,7 @@ chatbot = ChatBot(
 
     storage_adapter='chatterbot.storage.MongoDatabaseAdapter',
     database_uri='mongodb://localhost:27017/',
-    database='chatterbot_cruises',
+    database='chat_1',
     
     
     logic_adapters=[
@@ -23,12 +22,12 @@ chatbot = ChatBot(
         {
             'import_path': 'chatterbot.logic.LowConfidenceAdapter',
             'threshold': 0.51,
-            'default_response': 'Disculpa, no te he entendido bien, sólo soy experto en viajes. ¿Puedes ser más específico?.'
+            'default_response': 'Disculpa, no he entendido lo que ha querido decir. Puede replantearlo.'
         },
         {
             'import_path': 'chatterbot.logic.SpecificResponseAdapter',
-            'input_text': 'Quiero reservar un crucero',
-            'output_text': 'Puedes reservarlo ahora en: https://www.logitravel.com/cruceros/'
+            'input_text': 'Quiero guardar una cita',
+            'output_text': 'Puede guardar una cita en http://google.com'
         },
     ],
     
@@ -41,10 +40,10 @@ chatbot = ChatBot(
 DEFAULT_SESSION_ID = chatbot.default_conversation_id
 
 from chatterbot.trainers import ChatterBotCorpusTrainer
-'''
+
 chatbot.set_trainer(ChatterBotCorpusTrainer)
 chatbot.train("./cruises_es.yml")
-'''
+
 
 '''
 conversation = [
@@ -68,8 +67,11 @@ print 'Bot: '+response
 '''
 def responder(pregunta):
     print("Pregunta..."+pregunta)
-    print("Estamos en chatbot")
+    #print("Estamos en chatbot")
     response = chatbot.get_response(pregunta)
-    response = u' '.join((response.text, '')).encode('utf-8').strip()
+    response = response.text.decode("latin-1",'replace')
+    #response = u' '.join((response.text, '')).decode('utf-8').strip()
     print response
     return response
+#drop database....
+#mongo chatterbot_cruises --eval "db.dropDatabase()"
