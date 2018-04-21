@@ -68,10 +68,14 @@ print 'Bot: '+response
 def responder(pregunta):
     print("Pregunta..."+pregunta)
     #print("Estamos en chatbot")
+    #pregunta = pregunta.replace('á','&atilde;').replace('é','&etilde;').replace('í','&itilde;').replace('ó','&otilde;').replace('ú','&utilde;').replace('ñ','&ntilde;')
+    pregunta= u' '.join((pregunta, '')).encode('utf-8').strip()
+    
     response = chatbot.get_response(pregunta)
-    response = response.text.decode("latin-1",'replace')
-    #response = u' '.join((response.text, '')).decode('utf-8').strip()
+    response = response.text.replace('&atilde;','á').replace('&etilde;','é').replace('&itilde;','í').replace('&otilde;','ó').replace('&utilde;','ú').replace('&ntilde;','ñ')
+    #response = response.encode("utf-8",'replace')
+    response = u' '.join((response, '')).decode('utf-8').strip()
     print response
     return response
 #drop database....
-#mongo chatterbot_cruises --eval "db.dropDatabase()"
+#mongo chat_1 --eval "db.dropDatabase()"
