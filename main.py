@@ -13,6 +13,7 @@
 'llo Worl'
 '''
 '''
+
 geckodriver path
 ***
 PATH=$PATH:/home/usuario/python/whatsapp
@@ -43,7 +44,8 @@ list_chat = driver.view_unread()
 for chat in list_chat:
 	print chat
 	
-	
+INSTALL wmctrl
+sudo apt-get install wmctrl
 '''
 import sys, select
 reload(sys)  
@@ -82,6 +84,11 @@ def todos_vacios(array):
 	else:
 		return False
 
+def quitaNoAlfaNum(texto):
+    import re
+    tmp = re.compile(r'\W+', re.UNICODE).split(texto)
+    return ''.join(str(e+" ") for e in tmp)
+        
 
 
 '''
@@ -89,7 +96,7 @@ whatsapp -p
 '''
 WEB = 'http://web.whatsapp.com'
 PATH_FIREFOX_PROFILE = '/home/usuario/.mozilla/firefox/oanbip2k.whatsapp'
-
+TIEMPO_RECARGA = 45
 logging.basicConfig(filename='myapp.log', level=logging.ERROR, 
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 logger=logging.getLogger(__name__)
@@ -105,105 +112,91 @@ try:
 	scroll=0
 #termino de organizar y muestro a cual quiero hacer click
 	while True:	
-		#time.sleep(1)
-		print("Buscando chats nuevos...")
-		#Se actualiza cada X tiempo y si encuentra chat con mensajes no leidos los contestara
-		array_chat = llenar_array_chat(driver)
 
-		if len(array_chat) > 6:
-			try:				
-				while todos_llenos(array_chat):
-					print('HaY no leidos')
-					scroll_down(driver, scroll)
-					time.sleep(0.5)
-					scroll = scroll + 200
-					time.sleep(0.5)
-					array_chat = llenar_array_chat(driver)
-				
-				if todos_vacios(array_chat):
-					print('todos vacios')
-					scroll_up(driver, scroll)
-					time.sleep(0.5)
-					scroll = scroll - 200
-					time.sleep(0.5)
-					array_chat = llenar_array_chat(driver)
-			except:
-				print("Javascrit exception")
-		time.sleep(1)
-		chat_no_leido = get_chat_antiguo_no_leido(array_chat)
-		#chat_no_leido = get_chat_no_leido(array_chat)
-		'''
-		os.system('clear')
-		array_chat = llenar_array_chat(driver)
-		print 'Tenemos los siguientes chats disponibles: '
-		i=1
-		for chat in array_chat:
-			print "* "+str(i)+": "+str(chat)
-			i=i+1
-		print("Ingrese el numero al cual quiere mandar mensaje: ")
+	    print("Buscando chats nuevos...")
+	    array_chat = llenar_array_chat(driver)
+	    chat_no_leido = None
+	    
+	    if len(array_chat) > 6:
+		try:				
+		    while todos_llenos(array_chat):
+			print('HaY no leidos')
+			scroll_down(driver, scroll)
+			time.sleep(0.5)
+			scroll = scroll + 200
+			time.sleep(0.5)
+			array_chat = llenar_array_chat(driver)
+		    
+		    if todos_vacios(array_chat):
+			print('todos vacios')
+			scroll_up(driver, scroll)
+			time.sleep(0.5)
+			scroll = scroll - 200
+			time.sleep(0.5)
+			array_chat = llenar_array_chat(driver)
+			print('Hasta el final..')
+		except:
+		    print("Javascrit exception")
 		
-		opcion = str(input_time())
-		print "Opcion deseada"+str(opcion)
-		if (opcion!="0") and (opcion!="") and (opcion!=None) and (opcion!="\n"):
-		'''
-		if(chat_no_leido!=None):
-			opcion = chat_no_leido.get_numero_xpath()
-			seleccion = get_seleccion(driver, opcion)
-			
-			Hover = ActionChains(driver).move_to_element(seleccion)
-			Hover.perform()
-			Hover.click().perform()
-			print('click')
-			time.sleep(1)
-			
-			'''
-			driver.execute_script("document.getElementById('app').click();")
-			print 'click2'
-			time.sleep(1)
-			driver.execute_script("document.getElementById('app').focus();")
-			print 'Di Focus'
-			time.sleep(1)
-			'''
-			a = commands.getoutput("xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) _NET_WM_NAME")
-			start = a.find("\"")+1
-			programa_actual = a[start:-1]
-			print('Nombre programa actual: '+programa_actual)
-			#Recuperar el chat q se escogio
-			chat = array_chat[int(opcion)-1] # En el array es el anterior
-			#El numero de mensajes totales que se reciben...
-			time.sleep(1)
-			#mensajes_totales = total_mensajes_recuperados(driver)
-			#print str(mensajes_totales)
-			#El array de mensajjes recibidos...
-			array_recibidos_t = recolectar_mensajes(driver, chat)
-			array_recibidos_t.reverse()
-			array_recibidos = [x.replace('\n', '') for x in array_recibidos_t]
-			
-			lista_mensajes = []
-			for msg in array_recibidos:
-				hora = msg[-5:]
-				contenido = msg[:-5]
-				dia = 'hoy'
-				msg_tmp = Mensaje(contenido, dia, hora)
-				lista_mensajes.append(msg_tmp)
-			str1 = ""
-			for mens in lista_mensajes:
-				str1 = str1+" "+mens.get_contenido()
-			#str1 = str1.encode('utf-8')
-			print("Mensaje que llego: "+str1.encode('utf-8'))
-			
-			
-			
-			commands.getoutput('wmctrl -a Firefox')
-			time.sleep(1)
-			enviar_mensaje(driver, str1)
-			#Pierdo el foco
-			#driver.execute_script("document.getElementById('app').click();")			
-			#print 'quito focus'			
-			#driver.execute_script("document.getElementById('app').blur();")
-			commands.getoutput("wmctrl -a '"+programa_actual+"'")
-			
-        time.sleep(TIEMPO_RECARGA)
+	    time.sleep(1)
+	    chat_no_leido = get_chat_antiguo_no_leido(array_chat)
+	    if(chat_no_leido is None):
+		    time.sleep(TIEMPO_RECARGA)
+	    
+	    if(chat_no_leido!=None):
+		opcion = chat_no_leido.get_numero_xpath()
+		seleccion = get_seleccion(driver, opcion)
+		
+		Hover = ActionChains(driver).move_to_element(seleccion)
+		Hover.perform()
+		Hover.click().perform()
+		print('click')
+		time.sleep(1)
+		
+		a = commands.getoutput("xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) _NET_WM_NAME")
+		start = a.find("\"")+1
+		programa_actual = a[start:-1]
+		print('Nombre programa actual: '+programa_actual)
+		#Recuperar el chat q se escogio
+		chat = array_chat[int(opcion)-1] # En el array es el anterior
+		#El numero de mensajes totales que se reciben...
+		time.sleep(1)
+		#mensajes_totales = total_mensajes_recuperados(driver)
+		#print str(mensajes_totales)
+		#El array de mensajjes recibidos...
+		array_recibidos_t = recolectar_mensajes(driver, chat)
+		array_recibidos_t.reverse()
+		array_recibidos = [x.replace('\n', '') for x in array_recibidos_t]
+		
+		lista_mensajes = []
+		for msg in array_recibidos:
+		    hora = msg[-5:]
+		    contenido = msg[:-5]
+		    dia = 'hoy'
+		    msg_tmp = Mensaje(quitaNoAlfaNum(contenido), dia, hora)
+		    lista_mensajes.append(msg_tmp)
+		str1 = ""
+		for mens in lista_mensajes:
+		    str1 = str1+" "+mens.get_contenido()
+		#str1 = str1.encode('utf-8')
+		print("Mensaje que llego: "+str1.encode('utf-8'))
+		
+		
+		
+		
+		#time.sleep(1)
+		enviar_mensaje(driver, str1)
+		#Pierdo el foco
+		
+		commands.getoutput('wmctrl -a Firefox')
+		driver.execute_script("document.getElementById('app').click();")			
+		print 'quito focus'			
+		#driver.execute_script("document.getElementById('app').blur();")
+		time.sleep(2)
+		commands.getoutput("wmctrl -a '"+programa_actual+"'")    
+	
+		time.sleep(TIEMPO_RECARGA)
+		    
 except TimeoutException:
 	print("Load took too much time!")
 
