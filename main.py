@@ -84,13 +84,6 @@ def todos_vacios(array):
 	else:
 		return False
 
-def quitaNoAlfaNum(texto):
-    import re
-    tmp = re.compile(r'\W+', re.UNICODE).split(texto)
-    return ''.join(str(e+" ") for e in tmp)
-        
-
-
 '''
 whatsapp -p
 '''
@@ -185,7 +178,7 @@ try:
 		
 		
 		#time.sleep(1)
-		enviar_mensaje(driver, str1)
+		enviar_mensaje( driver, str1, chat_no_leido.get_nombre() )
 		#Pierdo el foco
 		
 		commands.getoutput('wmctrl -a Firefox')
