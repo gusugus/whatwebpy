@@ -1,6 +1,8 @@
 #encoding: utf-8
 #https://github.com/sukiweb/CreandoUnChatbotEnPython/blob/master/Creando_un_bot_experto_en_Cruceros.ipynb
 import sys, select
+reload(sys)  
+sys.setdefaultencoding('latin-1')
 
 from chatterbot import ChatBot
 from chatterbot.conversation import Statement
