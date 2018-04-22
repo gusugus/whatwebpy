@@ -1,197 +1,249 @@
-# -*- coding: utf-8 -*-
+'''DEPERCATED'''
+
+
 '''
->>> x = "Hello World!"
->>> x[2:]
-'llo World!'
->>> x[:2]
-'He'
->>> x[:-2]
-'Hello Worl'
->>> x[-2:]
-'d!'
->>> x[2:-2]
-'llo Worl'
-'''
+sudo apt-get install python-dev
+sudo easy-install pip
+pip install selenium
+
+CREAR NUEVO PROFILE MOZILLA (PRIMERO CERRARLO)
+firefox -p
+    /home/usuario/.mozilla/firefox/oanbip2k.whatsapp/
 '''
 
-geckodriver path
-***
-PATH=$PATH:/home/usuario/python/whatsapp
-cd python/whatsapp/
-python main.py
-***
-instalar python-dev
-xxx
-Actualizar iceweasel
-llevar geckodriver a /usr/local/bin y darle permisos x
-	os.environ["PATH"] += "/usr/local/bin/firefox"
-xxx
-http://maslinux.es/como-instalar-firefox-quantum-en-gnulinux/
-$ sudo tar -xjf firefox-57.0.tar.bz2
-$ sudo mv firefox /opt
-$ sudo ln -s /opt/firefox/firefox /usr/bin/firefox57
-$ firefox57
-crear nuevo profile
-firefox -p ->Nuevo Profile
-'''
-'''
-import time
-from webwhatsapi import WhatsAPIDriver
-#print("waiting for QR")
-driver = WhatsAPIDriver(client='Firefox', loadstyles=True, username='IFLEX')
-#driver.get_qr()
-list_chat = driver.view_unread()
-for chat in list_chat:
-	print chat
+from chatt import *
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
+import os
+
+
+array_chat = []
+
+
+TIME_INPUT = 10
+
+
+LIMITE_MENSAJES = 20
+XPATH_CAJA_MENSAJES = "/html/body/div/div/div/div[3]/div/footer/div[1]/div[2]/div/div[2]"
+'''El nombre (div) con el que se debe buscar los nombres'''
+CLASE_NOMBRE = "'_2wP_Y'"
+
+CLASE_MENSAJE_NO_LEIDO = "'vW7d1'"
+#CLASE_MENSAJE = "'vW7d1 _1nHRW'"
+CLASE_MENSAJE = "'vW7d1'"
+CLASE_CONTENEDOR_MENSAJES = "'RLfQR'"
+
+CLASE_DERECHA = "'_2nmDZ'"
+#/html/body/div/div/div/div[2]/div/div[3]/div/div/div/div[1]/div/div/div[2]/div[1]/div[2]
+#/html/body/div/div/div/div[2]/div/div[3]/div/div/div/div[13]/div/div/div[2]/div[1]/div[2]
+XPATH_TIEMPO_LLEGADA_1 = "/html/body/div/div/div/div[2]/div/div[3]/div/div/div/div["
+XPATH_TIEMPO_LLEGADA_2 = "]/div/div/div[2]/div[1]/div[2]"
+
+XPATH_NOMBRE_1 = "/html/body/div/div/div/div[2]/div/div[3]/div/div/div/div["
+XPATH_NOMBRE_2 = "]/div/div/div[2]/div[1]/div[1]"
+
+XPATH_NO_LEIDO_1 = "/html/body/div/div/div/div[2]/div/div[3]/div/div/div/div["
+XPATH_NO_LEIDO_2 = "]/div/div/div[2]/div[2]/div[2]"
+
+XPATH_MENSAJES_RECIBIDOS_1 = "/html/body/div/div/div/div[3]/div/div[2]/div/div/div[3]/div["
+
+
+
+
+class Chat:
+	def __init__(self, nombre, numero_xpath, no_leido, tiempo_llegada):
+		'''Nombre del chat'''
+		self.nombre = nombre
+		'''En que numero del actual xpath esta'''
+		self.numero_xpath = numero_xpath
+		'''Numero de mensajes no leidos'''
+		self.no_leido = no_leido
+		self.tiempo_llegada = tiempo_llegada
+		
+	'''***GETTERS***'''
+	def get_nombre(self):
+		return self.nombre
+	def get_numero_xpath(self):
+		return self.numero_xpath
+	def get_no_leido(self):
+		return self.no_leido
+	def get_tiempo_llegada(self):
+		try:
+			self.tiempo_llegada.split(":")
+			return self.tiempo_llegada
+		except :
+			return "00:00"
+	'''
+	return int(tmp[0])*60+int(tmp[1])
+	*ValueError: invalid literal for int() with base 10: 'Martes'
+	'''
+	def get_tiempo_llegada_en_minutos(self):
+		try:
+			tmp = self.tiempo_llegada.split(":")
+			return int(tmp[0])*60+int(tmp[1])
+		except :
+			return 0
+	'''*****SETTERS*****'''
+	'''La lista de los mensajes que tiene'''
+	def set_list(self, message):
+		self.message = message
+	def __str__(self):
+		return self.nombre.encode('utf-8')+"("+str(self.no_leido)+")"+" [-"+str(self.get_tiempo_llegada()).encode('utf-8')+"-]"
+
+'''-  -'''
+class Mensaje:
+	def __init__(self, contenido, dia, hora):
+		self.contenido = contenido
+		self.dia = dia
+		self.hora = hora
+	def get_contenido(self):
+		return self.contenido
+	def get_dia(self):
+		return self.dia
+	def get_hora(self):
+		return self.hora
+	def __str__(self):
+		return self.contenido.encode('utf-8')+"::"+self.hora
+
+def recargar_chats(driver):
+	lista_web_element = driver.find_elements_by_xpath("//div[@class="+CLASE_NOMBRE+"]")
+	return lista_web_element 
+
+def quitaNoAlfaNum(texto):
+	import re
+	tmp = re.compile(r'\W+', re.UNICODE).split(texto)
+	return ''.join(str(e+" ") for e in tmp)
+
+
+chat = Bott("general")
+def enviar_mensaje(driver, mensaje, nombre_chat):
+	input_box = driver.find_element_by_xpath(XPATH_CAJA_MENSAJES)
+	input_box.click()
+	#print("Enviando mensaje "+mensaje)
+	#enviar A CHATT.py
 	
-INSTALL wmctrl
-sudo apt-get install wmctrl
-'''
-import sys, select
-reload(sys)  
-sys.setdefaultencoding('latin-1')
-
-
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-
-from funciones import *
-import logging
-import time
-from datetime import datetime
-import commands
-
-def todos_llenos(array):
-	contador = 0
-	for chat in array:
-		if chat.get_no_leido() > 0 :
-			contador = contador + 1
-	if contador == len(array):
-		return True
-	else:
-		return False
+	mensaje= u' '.join((mensaje, '')).encode('utf-8').strip()
+	if(isinstance(mensaje, str)):
+		mensaje = mensaje.decode("utf-8")
 	
-def todos_vacios(array):
-	contador = 0
-	for chat in array:
-		if chat.get_no_leido() == 0 :
-			contador = contador + 1
-	if contador == len(array):
-		return True
+	#FIJARSE EN CHATT
+	if mensaje.find("lll") != -1:
+		print("Es entrenaminto")
+		mensaje = chat.training(mensaje)
 	else:
-		return False
+		print("Es un mensaje")
+		mensaje = chat.responder(mensaje)    
+	action = ActionChains(driver)
+	action.send_keys(mensaje)
+	action.send_keys(Keys.RETURN)
+	action.perform()
 
-'''
-whatsapp -p
-'''
-WEB = 'http://web.whatsapp.com'
-PATH_FIREFOX_PROFILE = '/home/usuario/.mozilla/firefox/oanbip2k.whatsapp'
-TIEMPO_RECARGA = 45
-logging.basicConfig(filename='myapp.log', level=logging.ERROR, 
-                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
-logger=logging.getLogger(__name__)
-profile = webdriver.FirefoxProfile(PATH_FIREFOX_PROFILE)
-driver = webdriver.Firefox(profile)
-#driver.implicitly_wait(40) # seconds
-driver.get(WEB)
-delay = 20 # seconds
-try:
-	myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'app')))
-#lista_web_element = driver.find_elements_by_xpath("//div[@class='_2wP_Y']")
-#print('Espero... hasta q se \"LLENE\" todos')
-	scroll=0
-#termino de organizar y muestro a cual quiero hacer click
-	while True:	
 
-	    print("Buscando chats nuevos...")
-	    array_chat = llenar_array_chat(driver)
-	    chat_no_leido = None
-	    
-	    if len(array_chat) > 6:
-		try:				
-		    while todos_llenos(array_chat):
-			print('HaY no leidos')
-			scroll_down(driver, scroll)
-			time.sleep(0.5)
-			scroll = scroll + 200
-			time.sleep(0.5)
-			array_chat = llenar_array_chat(driver)
-		    
-		    if todos_vacios(array_chat):
-			print('todos vacios')
-			scroll_up(driver, scroll)
-			time.sleep(0.5)
-			scroll = scroll - 200
-			time.sleep(0.5)
-			array_chat = llenar_array_chat(driver)
-			print('Hasta el final..')
+
+'''Traigo los X ultimos mensajes
+* ERROR CUANDO TENGO DEMASIADOS MENSAJES NO LEIDOS....
+'''
+def recolectar_mensajes(driver, chat):
+	#print "NO LEIDOS: "+str(chat.get_no_leido())
+	array_recibidos = []
+	
+	lista_web_element_mensajes = driver.find_elements_by_xpath("//*[contains(concat(' ', @class, ' '),"+CLASE_MENSAJE+")]")
+	mensajes_totales = len(lista_web_element_mensajes)
+	try:
+		#print("TODOS LOS NO LEIDOS")
+		for i in range(mensajes_totales, mensajes_totales-chat.get_no_leido(), -1):
+			#print ("*"+lista_web_element_mensajes[i-1].text)
+			array_recibidos.append(lista_web_element_mensajes[i-1].text)
+	except :
+		print("Faltan mensajes... no puedo leer todos los mensajes de "+str(chat))
+		return array_recibidos
+	return array_recibidos
+
+
+def get_chat_no_leido(array_chat):
+	chat_retorno = None
+	for chat in array_chat:
+		if chat.get_no_leido()>0:
+			chat_retorno = chat
+			break
+	return chat_retorno
+
+
+#https://stackoverflow.com/questions/27009247/python-find-min-max-and-average-of-a-list-array
+def get_chat_antiguo_no_leido(array_chat):
+	
+	chat_retorno = None
+	for chat in array_chat:
+		#print str(chat)
+		if chat.get_no_leido()>0:
+			if not chat_retorno:
+				chat_retorno = chat
+				#print str(chat_retorno)
+			elif chat.get_tiempo_llegada_en_minutos() < chat_retorno.get_tiempo_llegada_en_minutos():
+				chat_retorno = chat
+				#print str(chat_retorno)
+	return chat_retorno
+
+
+def llenar_array_chat(driver):
+	#print ('Llenando chats...')
+	lista_web_element = recargar_chats(driver)
+	array_chat = []
+	inicio = 1
+	no_leido=-1
+	#Creo array con los chats que se encuentren
+	#print "Son "+str(len(lista_web_element))+" elementos"
+	for i in range(inicio, len(lista_web_element)+1):
+		xpath_nombre = XPATH_NOMBRE_1+str(i)+XPATH_NOMBRE_2
+		nombre = driver.find_element_by_xpath(xpath_nombre).text
+		numero_xpath = i
+		
+		try:
+			xpath_no_leido=XPATH_NO_LEIDO_1+str(i)+XPATH_NO_LEIDO_2
+			no_leido = int(driver.find_element_by_xpath(xpath_no_leido).text)
+		except Exception:
+			no_leido=0
+		try:
+			xpath_tiempo_llegada = XPATH_TIEMPO_LLEGADA_1+str(i)+XPATH_TIEMPO_LLEGADA_2
+			tiempo_llegada = driver.find_element_by_xpath(xpath_tiempo_llegada).text
 		except:
-		    print("Javascrit exception")
-		
-	    time.sleep(1)
-	    chat_no_leido = get_chat_antiguo_no_leido(array_chat)
-	    if(chat_no_leido is None):
-		    time.sleep(TIEMPO_RECARGA)
-	    
-	    if(chat_no_leido!=None):
-		opcion = chat_no_leido.get_numero_xpath()
-		seleccion = get_seleccion(driver, opcion)
-		
-		Hover = ActionChains(driver).move_to_element(seleccion)
-		Hover.perform()
-		Hover.click().perform()
-		print('click')
-		time.sleep(1)
-		
-		a = commands.getoutput("xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) _NET_WM_NAME")
-		start = a.find("\"")+1
-		programa_actual = a[start:-1]
-		print('Nombre programa actual: '+programa_actual)
-		#Recuperar el chat q se escogio
-		chat = array_chat[int(opcion)-1] # En el array es el anterior
-		#El numero de mensajes totales que se reciben...
-		time.sleep(1)
-		#mensajes_totales = total_mensajes_recuperados(driver)
-		#print str(mensajes_totales)
-		#El array de mensajjes recibidos...
-		array_recibidos_t = recolectar_mensajes(driver, chat)
-		array_recibidos_t.reverse()
-		array_recibidos = [x.replace('\n', '') for x in array_recibidos_t]
-		
-		lista_mensajes = []
-		for msg in array_recibidos:
-		    hora = msg[-5:]
-		    contenido = msg[:-5]
-		    dia = 'hoy'
-		    msg_tmp = Mensaje(quitaNoAlfaNum(contenido), dia, hora)
-		    lista_mensajes.append(msg_tmp)
-		str1 = ""
-		for mens in lista_mensajes:
-		    str1 = str1+" "+mens.get_contenido()
-		#str1 = str1.encode('utf-8')
-		print("Mensaje que llego: "+str1.encode('utf-8'))
-		
-		
-		
-		
-		#time.sleep(1)
-		enviar_mensaje( driver, str1, chat_no_leido.get_nombre() )
-		#Pierdo el foco
-		
-		commands.getoutput('wmctrl -a Firefox')
-		driver.execute_script("document.getElementById('app').click();")			
-		print 'quito focus'			
-		#driver.execute_script("document.getElementById('app').blur();")
-		time.sleep(2)
-		commands.getoutput("wmctrl -a '"+programa_actual+"'")    
-	
-		time.sleep(TIEMPO_RECARGA)
-		    
-except TimeoutException:
-	print("Load took too much time!")
+			tiempo_llegada = "00:00"
+		chat = Chat(nombre, numero_xpath, no_leido, tiempo_llegada)
+		array_chat.append(chat)
+	#print ('Fin de llenar chats')
+	return array_chat
 
-except:
-	logging.exception(str(datetime.now()))
+'''Recupero el numero total de mensajes que se ha traido'''
+def total_mensajes_recuperados(driver):
+	lista_web_element_mensajes = driver.find_elements_by_xpath("//div[@class="+CLASE_MENSAJE+"]")
+	return len(lista_web_element_mensajes)
+
+'''
+import ConfigParser
+def traer_configuraciones():
+	global TIME_INPUT,TIEMPO_RECARGA,LIMITE_MENSAJES,XPATH_CAJA_MENSAJES,CLASE_NOMBRE,CLASE_MENSAJE_NO_LEIDO,CLASE_DERECHA,CLASE_MENSAJE,XPATH_NOMBRE_1,XPATH_NOMBRE_2,XPATH_MENSAJES_RECIBIDOS_1,PATH_FIREFOX_PROFILE,WEB
+	configParser = ConfigParser.RawConfigParser()
+	configParser.read(os.getcwd()+'/conf.txt')
+	TIME_INPUT = configParser.get('conf','TIME_INPUT')
+'''
+'''DEPERCATED'''
+def input_time():
+	i,o,e = select.select([sys.stdin],[],[],TIME_INPUT)
+	if i:
+		return sys.stdin.readline()
+	else:
+		return ""
+def get_seleccion(driver, opcion):
+	return driver.find_element_by_xpath(XPATH_NOMBRE_1+str(opcion)+"]")
+
+def scroll_down(driver, scroll):
+	driver.execute_script("document.getElementById('pane-side').scroll(0,"+str(scroll)+");")	
+
+def scroll_up(driver, scroll):
+	driver.execute_script("document.getElementById('pane-side').scroll(0,"+str(scroll)+");")
+	
+#document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);
+def scroll_down_all(driver):
+    driver.execute_script("document.getElementsByClassName('_2nmDZ')[0].scroll(document.body.scrollHeight,2*document.body.scrollHeight);")
+
